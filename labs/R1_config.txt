@@ -1,0 +1,130 @@
+
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable password 7 1511070D1739
+!
+no aaa new-model
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ no shutdown
+ no ip address
+!
+interface Ethernet0/0.3
+ no shutdown
+ description VLAN3_sub
+ encapsulation dot1Q 3
+ ip address 192.168.3.1 255.255.255.0
+!
+interface Ethernet0/0.4
+ no shutdown
+ description VLAN4_sub
+ encapsulation dot1Q 4
+ ip address 192.168.4.1 255.255.255.0
+!
+interface Ethernet0/0.8
+ no shutdown
+ description VLAN8_sub
+ encapsulation dot1Q 8
+!
+interface Ethernet0/1
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet0/2
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no shutdown
+ no ip address
+ shutdown
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ password 7 110A1016141D
+ logging synchronous
+line aux 0
+line vty 0 4
+ password 7 045802150C2E
+ login
+ transport input none
+!
+!
+end
