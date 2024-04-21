@@ -1,14 +1,14 @@
 Схема лабораторного стенда
 
---== Вот тут она будет ==--
+![image](https://github.com/verttte/otus-labs/assets/165086553/b7312765-280f-43af-91bb-fe1353069e52)
 
 Таблица адресации
 
---== Вот тут она будет ==--
+![image](https://github.com/verttte/otus-labs/assets/165086553/4f50fc23-1b2c-4721-ba08-56cfde894855)
 
 Таблица VLAN
 
---== Вот тут она будет ==--
+![image](https://github.com/verttte/otus-labs/assets/165086553/249a66c4-d676-4497-a16f-1bfa174b6c8d)
 
 ### Часть 1: Построение сети и настройка основных параметров устройства
 
@@ -130,6 +130,181 @@ ip dhcp pool R2_Clients_LAN
  lease 2 12 30
 ```
 
+#### Производим проверки
 
+```
+R1#show ip dhcp pool
 
+Pool R1_Clients_LAN :
+ Utilization mark (high/low)    : 100 / 0
+ Subnet size (first/next)       : 0 / 0
+ Total addresses                : 62
+ Leased addresses               : 0
+ Pending event                  : none
+ 1 subnet is currently in the pool :
+ Current index        IP address range                    Leased addresses
+ 192.168.1.1          192.168.1.1      - 192.168.1.62      0
 
+Pool R2_Clients_LAN :
+ Utilization mark (high/low)    : 100 / 0
+ Subnet size (first/next)       : 0 / 0
+ Total addresses                : 14
+ Leased addresses               : 0
+ Pending event                  : none
+ 1 subnet is currently in the pool :
+ Current index        IP address range                    Leased addresses
+ 192.168.1.97         192.168.1.97     - 192.168.1.110     0
+```
+
+```
+R1#show ip dhcp binding
+Bindings from all pools not associated with VRF:
+IP address          Client-ID/              Lease expiration        Type
+                    Hardware address/
+                    User name
+```
+
+```
+R1#show ip dhcp server statistics
+Memory usage         25177
+Address pools        2
+Database agents      0
+Automatic bindings   0
+Manual bindings      0
+Expired bindings     0
+Malformed messages   0
+Secure arp entries   0
+
+Message              Received
+BOOTREQUEST          0
+DHCPDISCOVER         0
+DHCPREQUEST          0
+DHCPDECLINE          0
+DHCPRELEASE          0
+DHCPINFORM           0
+
+Message              Sent
+BOOTREPLY            0
+DHCPOFFER            0
+DHCPACK              0
+DHCPNAK              0
+```
+
+#### Попытка получить IP-адрес по DHCP на PC-A
+
+```
+PC-A> show ip
+
+NAME        : PC-A[1]
+IP/MASK     : 0.0.0.0/0
+GATEWAY     : 0.0.0.0
+DNS         :
+<...>
+
+PC-A> ip dhcp
+DDORA IP 192.168.1.6/26 GW 192.168.1.1
+
+PC-A> show ip
+
+NAME        : PC-A[1]
+IP/MASK     : 192.168.1.6/26
+GATEWAY     : 192.168.1.1
+DNS         :
+DHCP SERVER : 192.168.1.1
+DHCP LEASE  : 217795, 217800/108900/190575
+DOMAIN NAME : ccna-lab.com
+<...>
+```
+
+Проверяем связность
+
+```
+PC-A> ping 192.168.1.1
+
+84 bytes from 192.168.1.1 icmp_seq=1 ttl=255 time=0.301 ms
+84 bytes from 192.168.1.1 icmp_seq=2 ttl=255 time=0.435 ms
+^C
+```
+
+### Часть 3: Настройка и проверка DHCP-ретранслятора на R2 
+
+Настраиваем хелпер на интерфейсе в сторону локальной сети, указываем адрес стыкового интерфейса на R1. 
+
+```
+R2(config)#int e 0/1
+R2(config-if)#ip helper-address 10.0.0.1
+```
+
+Запрашиваем адрес с PC-B
+
+```
+PC-B> show ip
+
+NAME        : PC-B[1]
+IP/MASK     : 0.0.0.0/0
+GATEWAY     : 0.0.0.0
+DNS         :
+<...>
+
+PC-B> ip dhcp
+DDORA IP 192.168.1.102/28 GW 192.168.1.97
+
+PC-B> show ip
+
+NAME        : PC-B[1]
+IP/MASK     : 192.168.1.102/28
+GATEWAY     : 192.168.1.97
+DNS         :
+DHCP SERVER : 10.0.0.1
+DHCP LEASE  : 217796, 217800/108900/190575
+DOMAIN NAME : ccna-lab.com
+<...>
+```
+
+Проверяем связность, пинг к стыковому интерфейсу на R1
+
+```
+PC-B> ping 192.168.1.1
+
+84 bytes from 192.168.1.1 icmp_seq=1 ttl=254 time=0.416 ms
+84 bytes from 192.168.1.1 icmp_seq=2 ttl=254 time=0.520 ms
+^C
+```
+
+Проведем проверки
+
+```
+R1#show ip dhcp binding
+Bindings from all pools not associated with VRF:
+IP address          Client-ID/              Lease expiration        Type
+                    Hardware address/
+                    User name
+192.168.1.6         0100.5079.6668.03       Apr 24 2024 11:07 AM    Automatic
+192.168.1.102       0100.5079.6668.04       Apr 24 2024 11:20 AM    Automatic
+```
+
+```
+R1#show ip dhcp server statistics
+Memory usage         42095
+Address pools        2
+Database agents      0
+Automatic bindings   2
+Manual bindings      0
+Expired bindings     0
+Malformed messages   0
+Secure arp entries   0
+
+Message              Received
+BOOTREQUEST          0
+DHCPDISCOVER         4
+DHCPREQUEST          2
+DHCPDECLINE          0
+DHCPRELEASE          0
+DHCPINFORM           0
+
+Message              Sent
+BOOTREPLY            0
+DHCPOFFER            2
+DHCPACK              2
+DHCPNAK              0
+```
