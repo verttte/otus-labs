@@ -1,6 +1,7 @@
 #### Схема лабораторного стенда
 
-![image](https://github.com/verttte/otus-labs/assets/165086553/337b71cc-5204-4bdf-80e6-679cd5ccb5d2)
+![image](https://github.com/verttte/otus-labs/assets/165086553/4da1200a-110b-477b-9561-1ea042d83a91)
+
 
 #### 1. Маршрутизаторы R14-R15 находятся в зоне 0 - backbone.
 
