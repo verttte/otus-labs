@@ -1,0 +1,160 @@
+
+!
+! Last configuration change at 02:49:20 MSK Thu Jun 27 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R13
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ no shutdown
+ ip address 10.10.50.13 255.255.255.255
+!
+interface Ethernet0/0
+ no shutdown
+ description SW5
+ no ip address
+!
+interface Ethernet0/0.2
+ no shutdown
+ description MGMT
+ encapsulation dot1Q 2
+ ip address 172.16.0.13 255.255.255.0
+ glbp 2 ip 172.16.0.1
+ glbp 2 preempt
+ no cdp enable
+!
+interface Ethernet0/0.10
+ no shutdown
+ description VLAN0010
+ encapsulation dot1Q 10
+ ip address 192.168.10.13 255.255.255.0
+ glbp 10 ip 192.168.10.1
+ glbp 10 preempt
+ no cdp enable
+!
+interface Ethernet0/0.70
+ no shutdown
+ description VLAN0070
+ encapsulation dot1Q 70
+ ip address 192.168.70.13 255.255.255.0
+ glbp 70 ip 192.168.70.1
+ glbp 70 preempt
+ no cdp enable
+!
+interface Ethernet0/1
+ no shutdown
+ description R12
+ ip address 10.10.200.30 255.255.255.252
+!
+interface Ethernet0/2
+ no shutdown
+ description R15
+ ip address 10.10.200.18 255.255.255.252
+!
+interface Ethernet0/3
+ no shutdown
+ description R14
+ ip address 10.10.200.10 255.255.255.252
+!
+router ospf 1
+ router-id 10.10.50.13
+ passive-interface Ethernet0/0.2
+ passive-interface Ethernet0/0.10
+ passive-interface Ethernet0/0.70
+ network 10.10.50.13 0.0.0.0 area 10
+ network 10.10.200.0 0.0.0.255 area 10
+ network 172.16.0.0 0.0.0.255 area 10
+ network 192.168.10.0 0.0.0.255 area 10
+ network 192.168.70.0 0.0.0.255 area 10
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+end
