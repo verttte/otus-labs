@@ -1,0 +1,188 @@
+
+!
+! Last configuration change at 02:23:04 MSK Mon Jul 1 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R17
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ no shutdown
+ description SW9
+ no ip address
+!
+interface Ethernet0/0.2
+ no shutdown
+ description MGMT
+ encapsulation dot1Q 2
+ ip address 172.16.1.17 255.255.255.0
+ glbp 2 ip 172.16.1.1
+ glbp 2 preempt
+ no cdp enable
+!
+interface Ethernet0/0.80
+ no shutdown
+ description VLAN0080
+ encapsulation dot1Q 80
+ ip address 192.168.80.17 255.255.255.0
+ glbp 80 ip 192.168.80.1
+ glbp 80 preempt
+ no cdp enable
+!
+interface Ethernet0/0.90
+ no shutdown
+ description VLAN0090
+ encapsulation dot1Q 90
+ ip address 192.168.90.17 255.255.255.0
+ glbp 90 ip 192.168.90.1
+ glbp 90 preempt
+ no cdp enable
+!
+interface Ethernet0/1
+ no shutdown
+ description R18
+ ip address 10.10.202.2 255.255.255.252
+!
+interface Ethernet0/2
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no shutdown
+ no ip address
+ shutdown
+!
+!
+router eigrp AS2042
+ !
+ address-family ipv4 unicast autonomous-system 2042
+  !
+  af-interface Ethernet0/0
+   passive-interface
+  exit-af-interface
+  !
+  af-interface Ethernet0/2
+   passive-interface
+  exit-af-interface
+  !
+  af-interface Ethernet0/3
+   passive-interface
+  exit-af-interface
+  !
+  af-interface Ethernet0/0.2
+   passive-interface
+  exit-af-interface
+  !
+  af-interface Ethernet0/0.80
+   passive-interface
+  exit-af-interface
+  !
+  af-interface Ethernet0/0.90
+   passive-interface
+  exit-af-interface
+  !
+  af-interface Ethernet0/1
+   summary-address 192.168.80.0 255.255.240.0
+   authentication mode hmac-sha-256 otus-lab
+  exit-af-interface
+  !
+  topology base
+  exit-af-topology
+  network 10.10.202.0 0.0.0.255
+  network 172.16.1.0 0.0.0.255
+  network 192.168.80.0
+  network 192.168.90.0
+  eigrp router-id 10.10.50.17
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+end

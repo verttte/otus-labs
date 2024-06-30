@@ -1,0 +1,140 @@
+
+!
+! Last configuration change at 02:09:02 MSK Mon Jul 1 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R18
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ no shutdown
+ description R16
+ ip address 10.10.202.5 255.255.255.252
+!
+interface Ethernet0/1
+ no shutdown
+ description R17
+ ip address 10.10.202.1 255.255.255.252
+!
+interface Ethernet0/2
+ no shutdown
+ description TRIADA_R24
+ ip address 10.10.100.22 255.255.255.252
+!
+interface Ethernet0/3
+ no shutdown
+ description TRIADA_R26
+ ip address 10.10.100.26 255.255.255.252
+!
+!
+router eigrp AS2042
+ !
+ address-family ipv4 unicast autonomous-system 2042
+  !
+  af-interface Ethernet0/1
+   authentication mode hmac-sha-256 otus-lab
+  exit-af-interface
+  !
+  af-interface Ethernet0/0
+   authentication mode hmac-sha-256 otus-lab
+  exit-af-interface
+  !
+  topology base
+   redistribute static
+  exit-af-topology
+  network 10.10.202.0 0.0.0.255
+  eigrp router-id 10.10.50.18
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 10.10.100.21
+ip route 0.0.0.0 0.0.0.0 10.10.100.25
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+end
