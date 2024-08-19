@@ -120,7 +120,7 @@ router bgp 1001
 neighbor 10.10.100.1 description KITORN
 neighbor 10.10.100.1 route-map KITORN-OUT out
 ```
-В выводе информации BGP убеждаемся что пусть стал длинее
+В выводе информации BGP убеждаемся что пусть стал длинее  
 `show ip bgp`:  
 ![image](https://github.com/user-attachments/assets/6265d22c-e2c1-4ec0-9a87-d4cce6fad43f)
 
