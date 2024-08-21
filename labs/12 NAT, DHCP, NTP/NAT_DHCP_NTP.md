@@ -102,6 +102,46 @@ icmp 10.10.18.2:30266  192.168.80.80:30266 10.10.50.15:30266 10.10.50.15:30266
 
 ### Настройка статического NAT для R20
 
+Для демонстрации NAT добавим VPC2 с IP-адресом 192.168.20.20/24 и настроил под него интерфейс на маршрутизаторе.
+
+```
+R20(config)#interface Ethernet0/1
+R20(config-if)#desc VPC2
+R20(config-if)#ip address 192.168.20.1 255.255.255.0
+R20(config-if)#no shut
+```
+
+Настраиваем статическую трансляцию одного адреса в один. Вместо конкретного IP-адреса укажем интерфейс.
+
+```
+ip nat inside source static 192.168.20.20 interface Ethernet0/0
+```
+Указываем входищий и исходящий интерфейсы
+```
+interface Ethernet0/0
+ip nat outside
+interface Ethernet0/1
+ip nat inside
+```
+
+Проверим. Запускаем пинг с VPC2 и видим, что дебаг на R15 показывает ответы на адрес 10.10.200.22, который настроен на интерфейсе Ethernet0/0 R20.
+
+```
+VPC2> ping 10.10.50.15
+
+84 bytes from 10.10.50.15 icmp_seq=1 ttl=254 time=1.134 ms
+84 bytes from 10.10.50.15 icmp_seq=2 ttl=254 time=1.306 ms
+^C
+```
+
+```
+R15#debug ip icmp
+R15#
+*Aug 21 19:48:34.306: ICMP: echo reply sent, src 10.10.50.15, dst 10.10.200.22, topology BASE, dscp 0 topoid 0
+*Aug 21 19:48:35.307: ICMP: echo reply sent, src 10.10.50.15, dst 10.10.200.22, topology BASE, dscp 0 topoid 0
+```
+
+
 ### Настройка NAT так, чтобы R19 был доступен с любого узла для удаленного управления
 
 ### Настройка статический NAT (PAT) для офиса Чокурдах
