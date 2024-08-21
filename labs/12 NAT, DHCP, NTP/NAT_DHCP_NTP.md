@@ -146,6 +146,46 @@ R15#
 
 ### Настройка статический NAT (PAT) для офиса Чокурдах
 
+В Чокурдах ранее была принята политика, что трафик сегмента VLAN 30 отправляется в Триада R26, а сегмента VLAN 31 в Триада R25. Настроим NAT в соответствии с этой политикой.
+
+Создаем отдельные для каждого сегмента ACL
+
+```
+access-list 30 permit 192.168.30.0 0.0.0.255
+access-list 31 permit 192.168.31.0 0.0.0.255
+```
+
+Включаем отдельные для каждого сегмена странсляции. Параметр `overload` определяет, что используется PAT.
+
+```
+ip nat inside source list 30 interface Ethernet0/0 overload
+ip nat inside source list 31 interface Ethernet0/1 overload
+```
+
+Помечаем входящие и исходящие интерфейсы
+
+```
+interface Ethernet0/2.30
+ip nat inside
+interface Ethernet0/2.31
+ip nat inside
+interface range Ethernet0/0-1
+ip nat outside
+```
+
+Проверяем. При пинге соседних маршрутизаторов в дебаге видим ответ на IP-адрес не устройства, с которого был пинг, а на адрес исходящего интерфейса.
+
+```
+R25#
+*Aug 21 22:13:49.528: ICMP: echo reply sent, src 10.10.100.33, dst 10.10.100.34, topology BASE, dscp 0 topoid 0
+*Aug 21 22:13:50.530: ICMP: echo reply sent, src 10.10.100.33, dst 10.10.100.34, topology BASE, dscp 0 topoid 0
+```
+```
+R26#
+*Aug 21 22:12:58.002: ICMP: echo reply sent, src 10.10.100.37, dst 10.10.100.38, topology BASE, dscp 0 topoid 0
+*Aug 21 22:12:58.345: ICMP: echo reply sent, src 10.10.100.37, dst 10.10.100.38, topology BASE, dscp 0 topoid 0
+```
+
 ### Настройка для IPv4 DHCP сервера в офисе Москва на маршрутизаторах R12 и R13. VPC1 и VPC7 должны получать сетевые настройки по DHCP.
 
 ### Настройка NTP сервера на R12 и R13. Все устройства в офисе Москва должны синхронизировать время с R12 и R13.
