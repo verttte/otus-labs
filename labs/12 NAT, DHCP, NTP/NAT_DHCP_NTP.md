@@ -188,5 +188,47 @@ R26#
 
 ### Настройка для IPv4 DHCP сервера в офисе Москва на маршрутизаторах R12 и R13. VPC1 и VPC7 должны получать сетевые настройки по DHCP.
 
+На маршрутизаторах используется резервирование шлюза GLBP. Целесообразно DHCP серверы тоже сделать зарезервированными. В соответствии с [документацией Cisco](https://www.cisco.com/c/en/us/support/docs/ip/dynamic-address-allocation-resolution/27470-100.html#toc-hId--1017204738:~:text=At%20the%20address,from%20the%20pool.) DHCP проверяет наличие конфликтов с помощью ping и gratuitous ARP, при обнаружении конфликта адрес удаляется из пула. Соответственно мы просто создаем две одинаковых конфигурации на обоих маршрутизаторах. Адрес ПК получит у одного из серверов, а второй сервер проверив, что адрес занят не будет выдавать такой же.
+
+Укажем адреса, не участвующие в выдаче. 1 - шлюз, 12 и 13 - адреса на подинтерфейсах каждого сегмента.
+
+```
+ip dhcp excluded-address 192.168.10.1
+ip dhcp excluded-address 192.168.10.12 192.168.10.13
+ip dhcp excluded-address 192.168.70.1
+ip dhcp excluded-address 192.168.70.12 192.168.70.13
+```
+
+Настроим пулы
+
+```
+ip dhcp pool NET10
+ network 192.168.10.0 255.255.255.0
+ default-router 192.168.10.1
+ domain-name otus.ru
+ dns-server 192.168.10.1
+!
+ip dhcp pool NET70
+ network 192.168.70.0 255.255.255.0
+ default-router 192.168.70.1
+ domain-name otus.ru
+ dns-server 192.168.70.1
+```
+
+Запрашиваем адрес на VPC. Проверяем пинг до соседнего сегмента.
+
+```
+VPC10> ip dhcp
+DDORA IP 192.168.10.2/24 GW 192.168.10.1
+
+VPC10> ping 192.168.70.2
+
+84 bytes from 192.168.70.2 icmp_seq=1 ttl=63 time=6.116 ms
+84 bytes from 192.168.70.2 icmp_seq=2 ttl=63 time=3.387 ms
+^C
+```
+
+![image](https://github.com/user-attachments/assets/a07e1a4f-adbd-4336-8ed0-7b46f8daf2f9)
+
 ### Настройка NTP сервера на R12 и R13. Все устройства в офисе Москва должны синхронизировать время с R12 и R13.
 
