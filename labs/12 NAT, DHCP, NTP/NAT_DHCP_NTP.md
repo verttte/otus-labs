@@ -144,6 +144,16 @@ R15#
 
 ### Настройка NAT так, чтобы R19 был доступен с любого узла для удаленного управления
 
+Для демонстрации удаленного управления настроим лини vty - разрешим доступ по telnet, установим пароль и привлегию линии повысим до высшей, чтоб миновать пароль enable.
+
+```
+line vty 0 4
+ privilege level 15
+ password otus
+ login
+ transport input telnet
+```
+
 ![image](https://github.com/user-attachments/assets/47d2a6f0-6e0a-4bba-b21f-f1e1e6466de7)
 
 ### Настройка статический NAT (PAT) для офиса Чокурдах
