@@ -1,0 +1,188 @@
+
+!
+! No configuration change since last restart
+! NVRAM config last updated at 16:44:04 Moscow Sun Sep 1 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R15
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone Moscow 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ no shutdown
+ ip address 10.10.50.15 255.255.255.255
+!
+interface Ethernet0/0
+ no shutdown
+ description R13
+ ip address 10.10.200.17 255.255.255.252
+ ip nat inside
+ ip virtual-reassembly in
+ ip ospf 1 area 10
+!
+interface Ethernet0/1
+ no shutdown
+ description R12
+ ip address 10.10.200.13 255.255.255.252
+ ip nat inside
+ ip virtual-reassembly in
+ ip ospf 1 area 10
+!
+interface Ethernet0/2
+ no shutdown
+ description LAMAS
+ ip address 10.10.100.6 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+!
+interface Ethernet0/3
+ no shutdown
+ description R20
+ ip address 10.10.200.21 255.255.255.252
+ ip ospf 1 area 102
+!
+interface Ethernet1/0
+ no shutdown
+ description R14
+ ip address 10.10.200.25 255.255.255.252
+ ip ospf 1 area 0
+!
+interface Ethernet1/1
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no shutdown
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 10.10.50.15
+ area 102 filter-list prefix AREA_102_IN in
+ network 10.10.50.15 0.0.0.0 area 0
+ network 10.10.200.0 0.0.0.255 area 0
+ default-information originate
+!
+router bgp 1001
+ bgp router-id 10.10.50.15
+ bgp log-neighbor-changes
+ network 10.10.50.15 mask 255.255.255.255
+ network 10.10.100.4 mask 255.255.255.252
+ neighbor 10.10.50.14 remote-as 1001
+ neighbor 10.10.50.14 description R14
+ neighbor 10.10.50.14 update-source Loopback0
+ neighbor 10.10.100.5 remote-as 301
+ neighbor 10.10.100.5 description LAMAS
+ neighbor 10.10.100.5 route-map LP-SET in
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list NAT-R15 interface Loopback0 overload
+ip route 0.0.0.0 0.0.0.0 10.10.100.5
+!
+ip access-list standard NAT-R15
+ permit 192.168.10.0 0.0.0.255
+ permit 192.168.70.0 0.0.0.255
+!
+!
+ip prefix-list AREA_102_IN seq 10 deny 10.10.50.19/32
+ip prefix-list AREA_102_IN seq 20 deny 10.10.200.0/30
+ip prefix-list AREA_102_IN seq 100 permit 0.0.0.0/0 le 32
+!
+route-map LP-SET permit 10
+ set local-preference 110
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route 
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+ntp server 10.10.50.12
+ntp server 10.10.50.13 prefer
+!
+end

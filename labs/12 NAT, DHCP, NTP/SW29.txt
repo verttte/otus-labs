@@ -1,0 +1,112 @@
+
+!
+! Last configuration change at 20:54:42 MSK Thu Aug 22 2024
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname SW29
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone MSK 3 0
+!
+!
+!
+!
+!
+vtp mode off
+!
+!
+!
+no ip domain-lookup
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+no spanning-tree vlan 1-4094
+!
+vlan internal allocation policy ascending
+!
+vlan 2
+ name MGMT
+!
+vlan 30-31 
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ no shutdown
+ description VPC30
+ switchport access vlan 30
+ switchport mode access
+!
+interface Ethernet0/1
+ no shutdown
+ description VPC31
+ switchport access vlan 31
+ switchport mode access
+!
+interface Ethernet0/2
+ no shutdown
+ description R28
+ switchport trunk allowed vlan 2,30,31
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/3
+ no shutdown
+!
+interface Vlan2
+ no shutdown
+ description MGMT
+ ip address 172.16.2.29 255.255.255.0
+!
+ip default-gateway 172.16.2.1
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+control-plane
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sir show ip route
+alias exec sri show run interface
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+!
+!
+end

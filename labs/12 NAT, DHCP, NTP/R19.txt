@@ -1,0 +1,137 @@
+
+!
+! Last configuration change at 16:42:43 Moscow Sun Sep 1 2024
+! NVRAM config last updated at 16:44:01 Moscow Sun Sep 1 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R19
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone Moscow 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip domain name otus.ru
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+username admin privilege 15 password 0 otus
+!
+redundancy
+!
+no cdp run
+!
+ip ssh version 2
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ no shutdown
+ ip address 10.10.50.19 255.255.255.255
+!
+interface Ethernet0/0
+ no shutdown
+ description R14
+ ip address 10.10.200.2 255.255.255.252
+!
+interface Ethernet0/1
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet0/2
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no shutdown
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 10.10.50.19
+ area 101 stub no-summary
+ network 10.10.50.19 0.0.0.0 area 101
+ network 10.10.200.0 0.0.0.255 area 101
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ privilege level 15
+ password otus
+ login local
+ transport input ssh
+!
+ntp server 10.10.50.12 prefer
+ntp server 10.10.50.13
+!
+end

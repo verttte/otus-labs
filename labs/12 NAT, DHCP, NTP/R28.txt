@@ -1,0 +1,167 @@
+
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R28
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ no shutdown
+ description TRIADA_R26
+ ip address 10.10.100.38 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+!
+interface Ethernet0/1
+ no shutdown
+ description TRIADA_R25
+ ip address 10.10.100.34 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+!
+interface Ethernet0/2
+ no shutdown
+ no ip address
+!
+interface Ethernet0/2.2
+ no shutdown
+ description MGMT
+ encapsulation dot1Q 2
+ ip address 172.16.2.1 255.255.255.0
+ no cdp enable
+!
+interface Ethernet0/2.30
+ no shutdown
+ description VLAN0030
+ encapsulation dot1Q 30
+ ip address 192.168.30.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ ip policy route-map NET30
+ no cdp enable
+!
+interface Ethernet0/2.31
+ no shutdown
+ description VLAN0031
+ encapsulation dot1Q 31
+ ip address 192.168.31.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ ip policy route-map NET31
+ no cdp enable
+!
+interface Ethernet0/3
+ no shutdown
+ no ip address
+ shutdown
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list 30 interface Ethernet0/0 overload
+ip nat inside source list 31 interface Ethernet0/1 overload
+!
+ip access-list standard NET30
+ permit 192.168.30.0 0.0.0.255
+ip access-list standard NET31
+ permit 192.168.31.0 0.0.0.255
+!
+ip sla 1
+ icmp-echo 10.10.100.37 source-ip 10.10.100.38
+ frequency 10
+ip sla schedule 1 life forever start-time now
+!
+route-map NET30 permit 10
+ match ip address NET30
+ set ip next-hop 10.10.100.37
+!
+route-map NET31 permit 10
+ match ip address NET31
+ set ip next-hop 10.10.100.33
+!
+!
+access-list 30 permit 192.168.30.0 0.0.0.255
+access-list 31 permit 192.168.31.0 0.0.0.255
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+end

@@ -1,0 +1,151 @@
+
+!
+! Last configuration change at 18:52:24 Moscow Thu Aug 22 2024
+! NVRAM config last updated at 20:39:44 Moscow Thu Aug 22 2024
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname SW5
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone Moscow 3 0
+!
+!
+!
+!
+!
+vtp mode off
+no ip routing
+!
+!
+!
+no ip domain-lookup
+no ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+spanning-tree vlan 1-4094 priority 28672
+!
+vlan internal allocation policy ascending
+!
+vlan 2
+ name MGMT
+!
+vlan 10
+ name LAN_10
+!
+vlan 70
+ name LAN_70
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Port-channel1
+ no shutdown
+ description SW4
+ switchport trunk allowed vlan 2,10,70
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/0
+ no shutdown
+ description SW2
+ switchport trunk allowed vlan 2,10,70
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/1
+ no shutdown
+ description SW3
+ switchport trunk allowed vlan 2,10,70
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/2
+ no shutdown
+ description SW4_AGGR
+ switchport trunk allowed vlan 2,10,70
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode on
+!
+interface Ethernet0/3
+ no shutdown
+ description SW4_AGGR
+ switchport trunk allowed vlan 2,10,70
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode on
+!
+interface Ethernet1/0
+ no shutdown
+ description R13
+ switchport trunk allowed vlan 2,10,70
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet1/1
+ no shutdown
+!
+interface Ethernet1/2
+ no shutdown
+!
+interface Ethernet1/3
+ no shutdown
+!
+interface Vlan2
+ no shutdown
+ description MGMT
+ ip address 172.16.0.5 255.255.255.0
+ no ip route-cache
+!
+ip default-gateway 172.16.0.1
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+control-plane
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+!
+ntp server 10.10.50.12
+ntp server 10.10.50.13 prefer
+!
+end
