@@ -30,8 +30,25 @@ R15(config-router)#neighbor 10.10.100.5 filter-list 10 out
 
 Для префиксов из AS 2042 больше нет next-hop через AS 1001
 
+### Настроить фильтрацию в офисе С.-Петербург так, чтобы не появилось транзитного трафика (Prefix-list)
 
-### Настроить фильтрацию в офисе С.-Петербург так, чтобы не появилось транзитного трафика(Prefix-list)
+Создадим на R18 prefix-list, перечислив все префиксы, которые мы анонсируем нашим соседям
+
+```
+ip prefix-list FILTER-OUT seq 10 permit 10.10.18.0/29
+ip prefix-list FILTER-OUT seq 20 permit 10.10.50.18/32
+ip prefix-list FILTER-OUT seq 30 permit 10.10.100.20/30
+ip prefix-list FILTER-OUT seq 40 permit 10.10.100.24/30
+```
+
+Применим фильтр к соседям в направлении `out`
+
+```
+R18(config)#router bgp 2042
+R18(config-router)#neighbor 10.10.100.21 prefix-list FILTER-OUT out
+R18(config-router)#neighbor 10.10.100.25 prefix-list FILTER-OUT out
+```
+
 
 ### Настроить провайдера Киторн так, чтобы в офис Москва отдавался только маршрут по умолчанию
 
