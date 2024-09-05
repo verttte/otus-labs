@@ -1,0 +1,190 @@
+
+!
+! Last configuration change at 20:31:31 Moscow Thu Sep 5 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R14
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone Moscow 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ no shutdown
+ ip address 10.10.50.14 255.255.255.255
+!
+interface Ethernet0/0
+ no shutdown
+ description R12
+ ip address 10.10.200.5 255.255.255.252
+ ip nat inside
+ ip virtual-reassembly in
+ ip ospf 1 area 10
+!
+interface Ethernet0/1
+ no shutdown
+ description R13
+ ip address 10.10.200.9 255.255.255.252
+ ip nat inside
+ ip virtual-reassembly in
+ ip ospf 1 area 10
+!
+interface Ethernet0/2
+ no shutdown
+ description KITORN
+ ip address 10.10.100.2 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+!
+interface Ethernet0/3
+ no shutdown
+ description R19
+ ip address 10.10.200.1 255.255.255.252
+ ip nat inside
+ ip virtual-reassembly in
+ ip ospf 1 area 101
+!
+interface Ethernet1/0
+ no shutdown
+ description R15
+ ip address 10.10.200.26 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+ ip ospf 1 area 0
+!
+interface Ethernet1/1
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no shutdown
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 10.10.50.14
+ area 101 stub no-summary
+ network 10.10.50.14 0.0.0.0 area 0
+ network 10.10.200.0 0.0.0.255 area 0
+ default-information originate
+!
+router bgp 1001
+ bgp router-id 10.10.50.14
+ bgp log-neighbor-changes
+ network 10.10.50.14 mask 255.255.255.255
+ network 10.10.100.0 mask 255.255.255.252
+ network 10.10.200.24 mask 255.255.255.252
+ neighbor 10.10.50.15 remote-as 1001
+ neighbor 10.10.50.15 description R15
+ neighbor 10.10.50.15 update-source Loopback0
+ neighbor 10.10.100.1 remote-as 101
+ neighbor 10.10.100.1 description KITORN
+ neighbor 10.10.100.1 route-map KITORN-OUT out
+ neighbor 10.10.100.1 filter-list 10 out
+!
+ip forward-protocol nd
+!
+ip as-path access-list 10 permit ^$
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list NAT-R14 interface Loopback0 overload
+ip nat inside source static tcp 10.10.50.19 22 10.10.100.2 22 extendable
+!
+ip access-list standard NAT-R14
+ permit 192.168.10.0 0.0.0.255
+ permit 192.168.70.0 0.0.0.255
+!
+!
+route-map KITORN-OUT permit 10
+ set as-path prepend 1001 1001
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+ntp server 10.10.50.12 prefer
+ntp server 10.10.50.13
+!
+end
