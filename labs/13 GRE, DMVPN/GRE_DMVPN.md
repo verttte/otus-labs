@@ -60,3 +60,17 @@ R18#
 ```
 
 ### Настроите DMVPN между Москва и Чокурдах, Лабытнанги
+
+R15  
+```
+interface Tunnel152728
+ ip address 10.9.0.9 255.255.255.248
+ no ip redirects
+ ip mtu 1400
+ ip nhrp authentication otus
+ ip nhrp map multicast dynamic
+ ip nhrp network-id 152728
+ ip tcp adjust-mss 1360
+ tunnel source Loopback0
+ tunnel mode gre multipoint
+```
