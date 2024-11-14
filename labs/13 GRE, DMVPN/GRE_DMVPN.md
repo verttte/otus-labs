@@ -1,4 +1,4 @@
-### Схемы лабораторного стенда
+### Схема лабораторного стенда
 
 ![image](https://github.com/user-attachments/assets/87becba8-bbc2-462b-8960-b3b521ca840b)
 
