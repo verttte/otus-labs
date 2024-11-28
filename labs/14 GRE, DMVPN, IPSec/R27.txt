@@ -1,0 +1,188 @@
+
+!
+! Last configuration change at 22:51:26 MSK Thu Nov 28 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R27
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint VPN
+ enrollment url http://10.10.50.14:80
+ subject-name CN=R27, OU=VPN, O=LAB, C=RU
+ revocation-check none
+ rsakeypair VPN
+!
+!
+crypto pki certificate chain VPN
+ certificate 05 nvram:R14CA#5.cer
+ certificate ca 01 nvram:R14CA#1CA.cer
+!
+redundancy
+!
+!
+ip ssh version 2
+! 
+!
+crypto ikev2 proposal PH1 
+ encryption aes-cbc-128
+ integrity sha256
+ group 2
+!
+crypto ikev2 policy IK2POL 
+ proposal PH1
+!
+!
+crypto ikev2 profile PROF1
+ match address local interface Ethernet0/0
+ match identity remote address 0.0.0.0 
+ authentication remote rsa-sig
+ authentication local rsa-sig
+ pki trustpoint VPN
+!
+!
+!
+crypto ipsec transform-set IPSEC_TS esp-aes esp-sha256-hmac 
+ mode transport
+!
+!
+crypto ipsec profile protect-gre
+ set transform-set IPSEC_TS 
+ set ikev2-profile PROF1
+!
+!
+!
+!
+!
+!
+interface Tunnel152728
+ no shutdown
+ ip address 10.9.0.10 255.255.255.248
+ no ip redirects
+ ip mtu 1400
+ ip nhrp authentication otus
+ ip nhrp map multicast 10.10.50.15
+ ip nhrp map 10.9.0.9 10.10.50.15
+ ip nhrp network-id 152728
+ ip nhrp holdtime 600
+ ip nhrp nhs 10.9.0.9
+ ip nhrp registration no-unique
+ ip nhrp shortcut
+ ip nhrp redirect
+ ip tcp adjust-mss 1360
+ tunnel source Ethernet0/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile protect-gre
+!
+interface Ethernet0/0
+ no shutdown
+ description TRIADA_R25
+ ip address 10.10.100.30 255.255.255.252
+!
+interface Ethernet0/1
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet0/2
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/0
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/1
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no shutdown
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no shutdown
+ no ip address
+ shutdown
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 10.10.100.29
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+end

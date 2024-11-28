@@ -1,0 +1,224 @@
+
+!
+! Last configuration change at 22:50:20 MSK Thu Nov 28 2024
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R28
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone MSK 3 0
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint VPN
+ enrollment url http://10.10.50.14:80
+ subject-name CN=R27, OU=VPN, O=CHO, C=RU
+ revocation-check none
+ rsakeypair VPN
+!
+!
+crypto pki certificate chain VPN
+ certificate 04 nvram:R14CA#4.cer
+ certificate ca 01 nvram:R14CA#1CA.cer
+!
+redundancy
+!
+no cdp run
+!
+ip ssh version 2
+! 
+!
+crypto ikev2 proposal PH1 
+ encryption aes-cbc-128
+ integrity sha256
+ group 2
+!
+crypto ikev2 policy IK2POL 
+ proposal PH1
+!
+!
+crypto ikev2 profile PROF1
+ match address local interface Ethernet0/0
+ match address local interface Ethernet0/1
+ match identity remote address 0.0.0.0 
+ authentication remote rsa-sig
+ authentication local rsa-sig
+ pki trustpoint VPN
+!
+!
+!
+crypto ipsec transform-set IPSEC_TS esp-aes esp-sha256-hmac 
+ mode transport
+!
+!
+crypto ipsec profile protect-gre
+ set transform-set IPSEC_TS 
+ set ikev2-profile PROF1
+!
+!
+!
+!
+!
+!
+interface Tunnel152728
+ no shutdown
+ ip address 10.9.0.11 255.255.255.248
+ no ip redirects
+ ip mtu 1400
+ ip nhrp authentication otus
+ ip nhrp map multicast 10.10.50.15
+ ip nhrp map 10.9.0.9 10.10.50.15
+ ip nhrp network-id 152728
+ ip nhrp holdtime 600
+ ip nhrp nhs 10.9.0.9
+ ip nhrp registration no-unique
+ ip nhrp shortcut
+ ip nhrp redirect
+ ip tcp adjust-mss 1360
+ tunnel source Ethernet0/1
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile protect-gre
+!
+interface Ethernet0/0
+ no shutdown
+ description TRIADA_R26
+ ip address 10.10.100.38 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+!
+interface Ethernet0/1
+ no shutdown
+ description TRIADA_R25
+ ip address 10.10.100.34 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+!
+interface Ethernet0/2
+ no shutdown
+ no ip address
+!
+interface Ethernet0/2.2
+ no shutdown
+ description MGMT
+ encapsulation dot1Q 2
+ ip address 172.16.2.1 255.255.255.0
+ no cdp enable
+!
+interface Ethernet0/2.30
+ no shutdown
+ description VLAN0030
+ encapsulation dot1Q 30
+ ip address 192.168.30.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ ip policy route-map NET30
+ no cdp enable
+!
+interface Ethernet0/2.31
+ no shutdown
+ description VLAN0031
+ encapsulation dot1Q 31
+ ip address 192.168.31.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ ip policy route-map NET31
+ no cdp enable
+!
+interface Ethernet0/3
+ no shutdown
+ no ip address
+ shutdown
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list 30 interface Ethernet0/0 overload
+ip nat inside source list 31 interface Ethernet0/1 overload
+ip route 10.10.50.14 255.255.255.255 10.10.100.33
+ip route 10.10.50.14 255.255.255.255 10.10.100.37
+ip route 10.10.50.15 255.255.255.255 10.10.100.33
+ip route 10.10.50.15 255.255.255.255 10.10.100.37
+!
+ip access-list standard NET30
+ permit 192.168.30.0 0.0.0.255
+ip access-list standard NET31
+ permit 192.168.31.0 0.0.0.255
+!
+ip sla 1
+ icmp-echo 10.10.100.37 source-ip 10.10.100.38
+ frequency 10
+ip sla schedule 1 life forever start-time now
+!
+route-map NET30 permit 10
+ match ip address NET30
+ set ip next-hop 10.10.100.37
+!
+route-map NET31 permit 10
+ match ip address NET31
+ set ip next-hop 10.10.100.33
+!
+!
+access-list 30 permit 192.168.30.0 0.0.0.255
+access-list 31 permit 192.168.31.0 0.0.0.255
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+alias exec c conf t
+alias exec sis show interfaces status
+alias exec sri show run interface
+alias exec sir show ip route
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+end
