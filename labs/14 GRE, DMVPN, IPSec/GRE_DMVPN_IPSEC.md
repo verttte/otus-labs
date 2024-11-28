@@ -463,3 +463,163 @@ CA Certificate
 (config-if)#tunnel protection ipsec profile protect-gre
 (config-if)#exit
 ```
+
+Проверяем
+
+<details><summary>R27</summary>
+
+```
+R27#show crypto ikev2 session
+ IPv4 Crypto IKEv2 Session
+
+Session-id:1, Status:UP-ACTIVE, IKE count:1, CHILD count:1
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status
+1         10.10.100.30/500      10.10.50.15/500       none/none            READY
+      Encr: AES-CBC, keysize: 128, PRF: SHA256, Hash: SHA256, DH Grp:2, Auth sign: RSA, Auth verify: RSA
+      Life/Active Time: 86400/1002 sec
+Child sa: local selector  10.10.100.30/0 - 10.10.100.30/65535
+          remote selector 10.10.50.15/0 - 10.10.50.15/65535
+          ESP spi in/out: 0x448C5B0/0x41CCF09E
+
+ IPv6 Crypto IKEv2 Session
+
+R27#show crypto ipsec sa
+
+interface: Tunnel152728
+    Crypto map tag: Tunnel152728-head-0, local addr 10.10.100.30
+
+   protected vrf: (none)
+   local  ident (addr/mask/prot/port): (10.10.100.30/255.255.255.255/47/0)
+   remote ident (addr/mask/prot/port): (10.10.50.15/255.255.255.255/47/0)
+   current_peer 10.10.50.15 port 500
+     PERMIT, flags={origin_is_acl,}
+    #pkts encaps: 6, #pkts encrypt: 6, #pkts digest: 6
+    #pkts decaps: 6, #pkts decrypt: 6, #pkts verify: 6
+    #pkts compressed: 0, #pkts decompressed: 0
+    #pkts not compressed: 0, #pkts compr. failed: 0
+    #pkts not decompressed: 0, #pkts decompress failed: 0
+    #send errors 0, #recv errors 0
+
+     local crypto endpt.: 10.10.100.30, remote crypto endpt.: 10.10.50.15
+     plaintext mtu 1458, path mtu 1500, ip mtu 1500, ip mtu idb (none)
+     current outbound spi: 0x41CCF09E(1103949982)
+     PFS (Y/N): N, DH group: none
+
+     inbound esp sas:
+      spi: 0x448C5B0(71878064)
+        transform: esp-aes esp-sha256-hmac ,
+        in use settings ={Transport, }
+        conn id: 2, flow_id: SW:2, sibling_flags 80000000, crypto map: Tunnel152728-head-0
+        sa timing: remaining key lifetime (k/sec): (4306744/2588)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     inbound ah sas:
+
+     inbound pcp sas:
+
+     outbound esp sas:
+      spi: 0x41CCF09E(1103949982)
+        transform: esp-aes esp-sha256-hmac ,
+        in use settings ={Transport, }
+        conn id: 1, flow_id: SW:1, sibling_flags 80000000, crypto map: Tunnel152728-head-0
+        sa timing: remaining key lifetime (k/sec): (4306744/2588)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     outbound ah sas:
+
+     outbound pcp sas:
+
+R27#ping 10.9.0.9
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.9.0.9, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 6/8/13 ms
+```
+
+</details>
+
+
+<details><summary>R28</summary>
+
+```
+R28#show crypto ikev2 session
+ IPv4 Crypto IKEv2 Session
+
+Session-id:1, Status:UP-ACTIVE, IKE count:1, CHILD count:1
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status
+1         10.10.100.34/500      10.10.50.15/500       none/none            READY
+      Encr: AES-CBC, keysize: 128, PRF: SHA256, Hash: SHA256, DH Grp:2, Auth sign: RSA, Auth verify: RSA
+      Life/Active Time: 86400/1215 sec
+Child sa: local selector  10.10.100.34/0 - 10.10.100.34/65535
+          remote selector 10.10.50.15/0 - 10.10.50.15/65535
+          ESP spi in/out: 0xDAA1B0A4/0x6F0B8191
+
+ IPv6 Crypto IKEv2 Session
+
+R28#show crypto ipsec sa
+
+interface: Tunnel152728
+    Crypto map tag: Tunnel152728-head-0, local addr 10.10.100.34
+
+   protected vrf: (none)
+   local  ident (addr/mask/prot/port): (10.10.100.34/255.255.255.255/47/0)
+   remote ident (addr/mask/prot/port): (10.10.50.15/255.255.255.255/47/0)
+   current_peer 10.10.50.15 port 500
+     PERMIT, flags={origin_is_acl,}
+    #pkts encaps: 12, #pkts encrypt: 12, #pkts digest: 12
+    #pkts decaps: 12, #pkts decrypt: 12, #pkts verify: 12
+    #pkts compressed: 0, #pkts decompressed: 0
+    #pkts not compressed: 0, #pkts compr. failed: 0
+    #pkts not decompressed: 0, #pkts decompress failed: 0
+    #send errors 0, #recv errors 0
+
+     local crypto endpt.: 10.10.100.34, remote crypto endpt.: 10.10.50.15
+     plaintext mtu 1458, path mtu 1500, ip mtu 1500, ip mtu idb (none)
+     current outbound spi: 0x6F0B8191(1863025041)
+     PFS (Y/N): N, DH group: none
+
+     inbound esp sas:
+      spi: 0xDAA1B0A4(3668029604)
+        transform: esp-aes esp-sha256-hmac ,
+        in use settings ={Transport, }
+        conn id: 2, flow_id: SW:2, sibling_flags 80000000, crypto map: Tunnel152728-head-0
+        sa timing: remaining key lifetime (k/sec): (4164952/2372)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     inbound ah sas:
+
+     inbound pcp sas:
+
+     outbound esp sas:
+      spi: 0x6F0B8191(1863025041)
+        transform: esp-aes esp-sha256-hmac ,
+        in use settings ={Transport, }
+        conn id: 1, flow_id: SW:1, sibling_flags 80000000, crypto map: Tunnel152728-head-0
+        sa timing: remaining key lifetime (k/sec): (4164952/2372)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     outbound ah sas:
+
+     outbound pcp sas:
+R28#ping 10.9.0.9
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.9.0.9, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 7/7/8 ms
+```
+
+</details>
+
+
+
+
