@@ -27,6 +27,7 @@ R15(ca-trustpoint)#exit
 R15(config)#crypto pki authenticate VPN
 R15(config)#crypto pki enroll VPN
 ```
+
 R18  
 ```
 R18(config)#crypto key generate rsa label VPN modulus 4096
@@ -312,10 +313,109 @@ Success rate is 100 percent (5/5), round-trip min/avg/max = 6/6/7 ms
 
 ### Настройка DMVPN поверх IPSec между Москва и Чокурдах, Лабытнанги
 
-```
+Настраиваем IPSec на R15
 
 ```
-
+R15(config)#interface Tunnel152728
+R15(config-if)#tunnel protection ipsec profile protect-gre
 ```
 
+Создаем сертификаты на R27 и R28
+
 ```
+crypto key generate rsa label VPN modulus 2048
+crypto pki trustpoint VPN
+enrollment url http://10.10.50.14
+subject-name CN=R27, OU=VPN, O=LAB, C=RU
+/для Чокурдах O=LAB
+rsakeypair VPN
+revocation-check none
+
+crypto pki authenticate VPN
+crypto pki enroll VPN
+```
+
+Подписываем сертификаты на R14  
+```
+R14#show crypto pki server R14CA requests
+
+<...>
+
+Router certificates requests:
+ReqID  State      Fingerprint                      SubjectName
+--------------------------------------------------------------
+2      pending    2EE1EBFE669D928F09BD9005189F8458 hostname=R28,cn=R27,ou=VPN,o=CHO,c=RU
+1      pending    C01DD28A58374E0B0CECA14BB64E095E hostname=R27,cn=R27,ou=VPN,o=LAB,c=RU
+
+R14#crypto pki server R14CA grant all
+```
+Проверяем
+
+<details><summary>R27</summary>
+
+```
+R27#show crypto pki certificates
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01
+  Certificate Usage: Signature
+  Issuer:
+    cn=R14CA
+  Subject:
+    cn=R14CA
+  Validity Date:
+    start date: 21:01:48 MSK Nov 14 2024
+    end   date: 21:01:48 MSK Nov 14 2027
+  Associated Trustpoints: VPN
+  Storage: nvram:R14CA#1CA.cer
+
+
+Certificate
+  Subject:
+    Name: R27
+   Status: Pending
+   Key Usage: General Purpose
+   Certificate Request Fingerprint MD5: C01DD28A 58374E0B 0CECA14B B64E095E
+   Certificate Request Fingerprint SHA1: B26B61EC 7983BA78 20C2BB08 02145742 A76575E3
+   Associated Trustpoint: VPN
+```
+
+</details>
+
+<details><summary>R28</summary>
+  
+```
+R28#show crypto pki certificates
+Certificate
+  Status: Available
+  Certificate Serial Number (hex): 04
+  Certificate Usage: General Purpose
+  Issuer:
+    cn=R14CA
+  Subject:
+    Name: R28
+    hostname=R28
+    cn=R27
+    ou=VPN
+    o=CHO
+    c=RU
+  Validity Date:
+    start date: 22:21:49 MSK Nov 28 2024
+    end   date: 22:21:49 MSK Nov 28 2025
+  Associated Trustpoints: VPN
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 01
+  Certificate Usage: Signature
+  Issuer:
+    cn=R14CA
+  Subject:
+    cn=R14CA
+  Validity Date:
+    start date: 21:01:48 MSK Nov 14 2024
+    end   date: 21:01:48 MSK Nov 14 2027
+  Associated Trustpoints: VPN
+  Storage: nvram:R14CA#1CA.cer
+```
+</details>
