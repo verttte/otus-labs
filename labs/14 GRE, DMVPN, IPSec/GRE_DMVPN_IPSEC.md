@@ -140,13 +140,164 @@ R18#
 
 ### Настройка GRE поверх IPSec между офисами Москва и С.-Петербург
 
+Настройки IPSec на R15 и R18 одинаковые для обоих маршрутизаторов.  
 ```
+(config)#crypto ikev2 proposal PH1
+(config-ikev2-proposal)#encryption aes-cbc-128
+(config-ikev2-proposal)#integrity sha256
+(config-ikev2-proposal)#group 2
+(config-ikev2-proposal)#exit
+(config)#crypto ikev2 policy IK2POL
+(config-ikev2-policy)#proposal PH1
+(config-ikev2-policy)#exit
+(config)#crypto ikev2 profile PROF1
+(config-ikev2-profile)#match address local interface e0/2
+(config-ikev2-profile)#match identity remote address 0.0.0.0
+(config-ikev2-profile)#authentication remote rsa-sig
+(config-ikev2-profile)#authentication local rsa-sig
+(config-ikev2-profile)#pki trustpoint VPN
+(config-ikev2-profile)#exit
+(config)#crypto ipsec transform-set IPSEC_TS esp-aes esp-sha256-hmac
+(cfg-crypto-trans)#mode transport
+(cfg-crypto-trans)#exit
+(cfg-crypto-trans)#crypto ipsec profile protect-gre
+(ipsec-profile)#set transform-set IPSEC_TS
+(ipsec-profile)#set ikev2-profile PROF1
+(ipsec-profile)#exit
+(config)#interface Tunnel1518
+(config-if)#tunnel protection ipsec profile protect-gre
+(config-if)#exit
+```
+
+Проверяем   
+<details><summary>R15</summary>
+
+```
+R15#sho crypto ikev2 sa
+ IPv4 Crypto IKEv2  SA
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status
+2         10.10.50.15/500         10.10.50.18/500         none/none            READY  
+      Encr: AES-CBC, keysize: 128, PRF: SHA256, Hash: SHA256, DH Grp:2, Auth sign: RSA, Auth verify: RSA
+      Life/Active Time: 86400/112 sec
+
+R15#sh crypto ipsec sa
+
+interface: Tunnel1518
+    Crypto map tag: Tunnel1518-head-0, local addr 10.10.50.15
+
+   protected vrf: (none)
+   local  ident (addr/mask/prot/port): (10.10.50.15/255.255.255.255/47/0)
+   remote ident (addr/mask/prot/port): (10.10.50.18/255.255.255.255/47/0)
+   current_peer 10.10.50.18 port 500
+     PERMIT, flags={origin_is_acl,}
+    #pkts encaps: 10, #pkts encrypt: 10, #pkts digest: 10
+    #pkts decaps: 86, #pkts decrypt: 86, #pkts verify: 86
+    #pkts compressed: 0, #pkts decompressed: 0
+    #pkts not compressed: 0, #pkts compr. failed: 0
+    #pkts not decompressed: 0, #pkts decompress failed: 0
+    #send errors 0, #recv errors 0
+
+     local crypto endpt.: 10.10.50.15, remote crypto endpt.: 10.10.50.18
+     plaintext mtu 1458, path mtu 1500, ip mtu 1500, ip mtu idb Ethernet0/2
+     current outbound spi: 0x6BC98540(1808368960)
+     PFS (Y/N): N, DH group: none
+
+     inbound esp sas:
+      spi: 0xA00E6CEA(2685299946)
+        transform: esp-aes esp-sha256-hmac ,
+        in use settings ={Transport, }
+        conn id: 1, flow_id: SW:1, sibling_flags 80000000, crypto map: Tunnel1518-head-0
+        sa timing: remaining key lifetime (k/sec): (4314568/3249)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     inbound ah sas:
+
+     inbound pcp sas:
+
+     outbound esp sas:
+      spi: 0x6BC98540(1808368960)
+        transform: esp-aes esp-sha256-hmac ,
+        in use settings ={Transport, }
+        conn id: 2, flow_id: SW:2, sibling_flags 80000000, crypto map: Tunnel1518-head-0
+        sa timing: remaining key lifetime (k/sec): (4314578/3249)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     outbound ah sas:
+
+     outbound pcp sas:
+```
+
+</details>
+
+<details><summary>R18</summary>
+
+```
+R18#sho crypto ikev2 sa
+  IPv4 Crypto IKEv2  SA
+
+ Tunnel-id Local                 Remote                fvrf/ivrf            Status
+ 1         10.10.50.18/500         10.10.50.15/500         none/none            READY  
+       Encr: AES-CBC, keysize: 128, PRF: SHA256, Hash: SHA256, DH Grp:2, Auth sign: RSA, Auth verify: RSA
+       Life/Active Time: 86400/122 sec
+
+R18#sh crypto ipsec sa
+
+interface: Tunnel1518
+   Crypto map tag: Tunnel1518-head-0, local addr 10.10.50.18
+
+  protected vrf: (none)
+  local  ident (addr/mask/prot/port): (10.10.50.18/255.255.255.255/47/0)
+  remote ident (addr/mask/prot/port): (10.10.50.15/255.255.255.255/47/0)
+  current_peer 10.10.50.15 port 500
+    PERMIT, flags={origin_is_acl,}
+   #pkts encaps: 139, #pkts encrypt: 139, #pkts digest: 139
+   #pkts decaps: 10, #pkts decrypt: 10, #pkts verify: 10
+   #pkts compressed: 0, #pkts decompressed: 0
+   #pkts not compressed: 0, #pkts compr. failed: 0
+   #pkts not decompressed: 0, #pkts decompress failed: 0
+   #send errors 0, #recv errors 0
+
+    local crypto endpt.: 10.10.50.18, remote crypto endpt.: 10.10.50.15
+    plaintext mtu 1458, path mtu 1500, ip mtu 1500, ip mtu idb Ethernet0/2
+    current outbound spi: 0xA00E6CEA(2685299946)
+    PFS (Y/N): N, DH group: none
+
+    inbound esp sas:
+     spi: 0x6BC98540(1808368960)
+       transform: esp-aes esp-sha256-hmac ,
+       in use settings ={Transport, }
+       conn id: 2, flow_id: SW:2, sibling_flags 80000000, crypto map: Tunnel1518-head-0
+       sa timing: remaining key lifetime (k/sec): (4252228/3000)
+       IV size: 16 bytes
+       replay detection support: Y
+       Status: ACTIVE(ACTIVE)
+
+    inbound ah sas:
+
+    inbound pcp sas:
+
+    outbound esp sas:
+     spi: 0xA00E6CEA(2685299946)
+       transform: esp-aes esp-sha256-hmac ,
+       in use settings ={Transport, }
+       conn id: 1, flow_id: SW:1, sibling_flags 80000000, crypto map: Tunnel1518-head-0
+       sa timing: remaining key lifetime (k/sec): (4252210/3000)
+       IV size: 16 bytes
+       replay detection support: Y
+       Status: ACTIVE(ACTIVE)
+
+    outbound ah sas:
+
+    outbound pcp sas:
 
 ```
 
-```
-
-```
+</details>
 
 ### Настройка DMVPN поверх IPSec между Москва и Чокурдах, Лабытнанги
 
