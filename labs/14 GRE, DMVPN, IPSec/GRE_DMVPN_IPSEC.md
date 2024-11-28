@@ -328,7 +328,7 @@ crypto pki trustpoint VPN
 enrollment url http://10.10.50.14
 subject-name CN=R27, OU=VPN, O=LAB, C=RU
 
-//для Чокурдах O=LAB
+//для Чокурдах O=CHO
 
 rsakeypair VPN
 revocation-check none
