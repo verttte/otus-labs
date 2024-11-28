@@ -152,7 +152,7 @@ R18#
 (config-ikev2-policy)#proposal PH1
 (config-ikev2-policy)#exit
 (config)#crypto ikev2 profile PROF1
-(config-ikev2-profile)#match address local interface e0/2
+(config-ikev2-profile)#match address local interface Loopback0
 (config-ikev2-profile)#match identity remote address 0.0.0.0
 (config-ikev2-profile)#authentication remote rsa-sig
 (config-ikev2-profile)#authentication local rsa-sig
@@ -178,7 +178,7 @@ R15#sho crypto ikev2 sa
  IPv4 Crypto IKEv2  SA
 
 Tunnel-id Local                 Remote                fvrf/ivrf            Status
-2         10.10.50.15/500         10.10.50.18/500         none/none            READY  
+1         10.10.50.15/500         10.10.50.18/500         none/none            READY  
       Encr: AES-CBC, keysize: 128, PRF: SHA256, Hash: SHA256, DH Grp:2, Auth sign: RSA, Auth verify: RSA
       Life/Active Time: 86400/112 sec
 
@@ -327,7 +327,9 @@ crypto key generate rsa label VPN modulus 2048
 crypto pki trustpoint VPN
 enrollment url http://10.10.50.14
 subject-name CN=R27, OU=VPN, O=LAB, C=RU
-/для Чокурдах O=LAB
+
+//для Чокурдах O=LAB
+
 rsakeypair VPN
 revocation-check none
 
@@ -355,6 +357,24 @@ R14#crypto pki server R14CA grant all
 
 ```
 R27#show crypto pki certificates
+Certificate
+  Status: Available
+  Certificate Serial Number (hex): 05
+  Certificate Usage: General Purpose
+  Issuer:
+    cn=R14CA
+  Subject:
+    Name: R27
+    hostname=R27
+    cn=R27
+    ou=VPN
+    o=LAB
+    c=RU
+  Validity Date:
+    start date: 22:21:49 MSK Nov 28 2024
+    end   date: 22:21:49 MSK Nov 28 2025
+  Associated Trustpoints: VPN
+
 CA Certificate
   Status: Available
   Certificate Serial Number (hex): 01
@@ -368,16 +388,6 @@ CA Certificate
     end   date: 21:01:48 MSK Nov 14 2027
   Associated Trustpoints: VPN
   Storage: nvram:R14CA#1CA.cer
-
-
-Certificate
-  Subject:
-    Name: R27
-   Status: Pending
-   Key Usage: General Purpose
-   Certificate Request Fingerprint MD5: C01DD28A 58374E0B 0CECA14B B64E095E
-   Certificate Request Fingerprint SHA1: B26B61EC 7983BA78 20C2BB08 02145742 A76575E3
-   Associated Trustpoint: VPN
 ```
 
 </details>
@@ -419,3 +429,37 @@ CA Certificate
   Storage: nvram:R14CA#1CA.cer
 ```
 </details>
+
+Настраиваем профиль ikev2 и IPSec на R27 и R28
+
+```
+(config)#crypto ikev2 proposal PH1
+(config-ikev2-proposal)#encryption aes-cbc-128
+(config-ikev2-proposal)#integrity sha256
+(config-ikev2-proposal)#group 2
+(config-ikev2-proposal)#exit
+(config)#crypto ikev2 policy IK2POL
+(config-ikev2-policy)#proposal PH1
+(config-ikev2-policy)#exit
+(config)#crypto ikev2 profile PROF1
+(config-ikev2-profile)#match address local interface Ethernet0/0
+
+//для R28 так же строка
+//(config-ikev2-profile)#match address local interface Ethernet0/1
+
+(config-ikev2-profile)#match identity remote address 0.0.0.0
+(config-ikev2-profile)#authentication remote rsa-sig
+(config-ikev2-profile)#authentication local rsa-sig
+(config-ikev2-profile)#pki trustpoint VPN
+(config-ikev2-profile)#exit
+(config)#crypto ipsec transform-set IPSEC_TS esp-aes esp-sha256-hmac
+(cfg-crypto-trans)#mode transport
+(cfg-crypto-trans)#exit
+(cfg-crypto-trans)#crypto ipsec profile protect-gre
+(ipsec-profile)#set transform-set IPSEC_TS
+(ipsec-profile)#set ikev2-profile PROF1
+(ipsec-profile)#exit
+(config)#interface Tunnel152728
+(config-if)#tunnel protection ipsec profile protect-gre
+(config-if)#exit
+```
