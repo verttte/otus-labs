@@ -230,6 +230,12 @@ interface: Tunnel1518
      outbound ah sas:
 
      outbound pcp sas:
+
+R15#ping 10.9.0.6
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.9.0.6, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 6/6/6 ms
 ```
 
 </details>
@@ -295,6 +301,11 @@ interface: Tunnel1518
 
     outbound pcp sas:
 
+R18#ping 10.9.0.5
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.9.0.5, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 6/6/7 ms
 ```
 
 </details>
