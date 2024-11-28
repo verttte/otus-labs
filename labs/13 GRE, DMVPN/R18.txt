@@ -73,6 +73,20 @@ interface Loopback1
  no shutdown
  ip address 10.10.18.1 255.255.255.248
 !
+interface Tunnel1418
+ description R14
+ ip address 10.9.0.2 255.255.255.252
+ keepalive 10 3
+ tunnel source Loopback0
+ tunnel destination 10.10.50.14
+!
+interface Tunnel1518
+ description R15
+ ip address 10.9.0.6 255.255.255.252
+ keepalive 10 3
+ tunnel source Loopback0
+ tunnel destination 10.10.50.15
+!
 interface Ethernet0/0
  no shutdown
  description R16
